@@ -33,7 +33,7 @@ int main() {
         }
 
         auto start = std::chrono::high_resolution_clock::now();
-        int len = train.getLength();
+        int length = train.getLength();
         auto end = std::chrono::high_resolution_clock::now();
 
         totalSteps += train.getOpCount();
@@ -46,6 +46,9 @@ int main() {
       std::cout << scenarioName << "," << n << "," << avgSteps << "," << avgTime << "\n";
     }
   }
+
+  return 0;
+}
 
   return 0;
 }
