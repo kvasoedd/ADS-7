@@ -26,8 +26,7 @@ int Train::getLength() {
 
   Car* start = first;
   Car* walker = first->next;
-
-  countOp++;  
+  countOp++;
 
   int len = 1;
   while (walker != start) {
@@ -35,12 +34,9 @@ int Train::getLength() {
     walker = walker->next;
     countOp++;
   }
-
   return len;
 }
 
 int Train::getOpCount() {
-  return countOp;
-}etOpCount() {
   return countOp;
 }
