@@ -24,8 +24,8 @@ void Train::addCar(bool light) {
 int Train::getLength() {
   if (!first) return 0;
 
-  Car* start = first;
-  Car* walker = first->next;
+  const Car* start = first;
+  const Car* walker = first->next;
   countOp++;
 
   int len = 1;
