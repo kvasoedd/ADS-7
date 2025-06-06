@@ -1,15 +1,50 @@
-// Copyright 2022 NNTU-CS
 #include <iostream>
+#include <chrono>
+#include <random>
 #include "train.h"
 
 int main() {
-  Train train;
-  int count = 60; // кол-во вагонов
+  std::cout << "Scenario,n,AvgSteps,AvgTimeMicrosec\n";
 
-  while (count--)
-    train.addCar(false);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::bernoulli_distribution dist(0.5);
 
-  std::cout << train.getLength() << std::endl;
-  std::cout << train.getOpCount() << std::endl;
+  for (int scenario = 0; scenario < 3; ++scenario) {
+    std::string scenarioName;
+    if (scenario == 0) scenarioName = "AllOff";
+    if (scenario == 1) scenarioName = "AllOn";
+    if (scenario == 2) scenarioName = "Random";
+
+    for (int n = 5; n <= 100; n += 5) {
+      long long totalSteps = 0;
+      long long totalTime = 0;
+      int runs = 10;
+
+      for (int i = 0; i < runs; ++i) {
+        Train train;
+
+        for (int j = 0; j < n; ++j) {
+          bool light = false;
+          if (scenario == 1) light = true;
+          else if (scenario == 2) light = dist(gen);
+          train.addCar(light);
+        }
+
+        auto start = std::chrono::high_resolution_clock::now();
+        int len = train.getLength();
+        auto end = std::chrono::high_resolution_clock::now();
+
+        totalSteps += train.getOpCount();
+        totalTime += std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+      }
+
+      double avgSteps = static_cast<double>(totalSteps) / runs;
+      double avgTime = static_cast<double>(totalTime) / runs;
+
+      std::cout << scenarioName << "," << n << "," << avgSteps << "," << avgTime << "\n";
+    }
+  }
+
   return 0;
 }
