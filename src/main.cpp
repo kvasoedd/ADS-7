@@ -14,8 +14,8 @@ int main() {
   for (int scenario = 0; scenario < 3; ++scenario) {
     std::string scenarioName;
     if (scenario == 0) scenarioName = "AllOff";
-    if (scenario == 1) scenarioName = "AllOn";
-    if (scenario == 2) scenarioName = "Random";
+    else if (scenario == 1) scenarioName = "AllOn";
+    else scenarioName = "Random";
 
     for (int n = 5; n <= 100; n += 5) {
       long long totalSteps = 0;
@@ -24,7 +24,6 @@ int main() {
 
       for (int i = 0; i < runs; ++i) {
         Train train;
-
         for (int j = 0; j < n; ++j) {
           bool light = false;
           if (scenario == 1) light = true;
@@ -42,7 +41,6 @@ int main() {
 
       double avgSteps = static_cast<double>(totalSteps) / runs;
       double avgTime = static_cast<double>(totalTime) / runs;
-
       std::cout << scenarioName << "," << n << "," << avgSteps << "," << avgTime << "\n";
     }
   }
