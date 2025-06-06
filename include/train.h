@@ -11,6 +11,11 @@ class Train {
   };
   int countOp;
   Car *first;
+
+  int countAllOff();
+  int countAllOn();
+  int countRandom();
+
  public:
   Train();
   void addCar(bool light);
