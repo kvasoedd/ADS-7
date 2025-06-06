@@ -40,21 +40,18 @@ int main() {
           train.addCar(light);
         }
 
-        auto start =
-            std::chrono::high_resolution_clock::now();
+        auto start = std::chrono::high_resolution_clock::now();
         train.getLength();
-        auto end =
-            std::chrono::high_resolution_clock::now();
+        auto end   = std::chrono::high_resolution_clock::now();
 
         totalSteps += train.getOpCount();
-        totalTime +=
-            std::chrono::duration_cast<
-                std::chrono::microseconds>(end - start)
-                .count();
+        totalTime += std::chrono::duration_cast<
+                          std::chrono::microseconds>(end - start)
+                          .count();
       }
 
       double avgSteps = static_cast<double>(totalSteps) / runs;
-      double avgTime = static_cast<double>(totalTime) / runs;
+      double avgTime  = static_cast<double>(totalTime) / runs;
 
       std::cout << scenarioName << "," << n << ","
                 << avgSteps << "," << avgTime << "\n";
