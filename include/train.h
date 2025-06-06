@@ -6,11 +6,11 @@ class Train {
  private:
   struct Car {
     bool light;
-    Car* next;
-    Car* prev;
+    Car *next;
+    Car *prev;
   };
   int countOp;
-  Car* first;
+  Car *first;
  public:
   Train();
   void addCar(bool light);
