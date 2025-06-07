@@ -1,62 +1,82 @@
 // Copyright 2022 NNTU-CS
 #include <iostream>
+#include <vector>
 #include <chrono>
-#include <random>
-#include <cstdint>
-#include <string>
+#include <fstream>
 #include "train.h"
 
-int main() {
-  std::cout << "Scenario,n,AvgSteps,AvgTimeMicrosec\n";
+struct ExperimentResult
+{
+    int n;
+    long long time_us;
+    int operations;
+};
 
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::bernoulli_distribution dist(0.5);
+std::vector<ExperimentResult> run_experiment(int condition)
+{
+    std::vector<ExperimentResult> results;
+    std::vector<int> ns = {2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000};
 
-  for (int scenario = 0; scenario < 3; ++scenario) {
-    std::string scenarioName;
-    if (scenario == 0) {
-      scenarioName = "AllOff";
-    } else if (scenario == 1) {
-      scenarioName = "AllOn";
-    } else {
-      scenarioName = "Random";
-    }
-
-    for (int n = 5; n <= 100; n += 5) {
-      int64_t totalSteps = 0;
-      int64_t totalTime = 0;
-      int runs = 10;
-
-      for (int i = 0; i < runs; ++i) {
+    for (int n : ns)
+    {
         Train train;
-        for (int j = 0; j < n; ++j) {
-          bool light = false;
-          if (scenario == 1) {
-            light = true;
-          } else if (scenario == 2) {
-            light = dist(gen);
-          }
-          train.addCar(light);
+
+        if (condition == 0)
+        {
+            for (int i = 0; i < n; i++)
+                train.addCar(false);
+        }
+        else if (condition == 1)
+        {
+            for (int i = 0; i < n; i++)
+                train.addCar(true);
+        }
+        else
+        {
+            for (int i = 0; i < n; i++)
+                train.addCar(rand() % 2);
         }
 
+        int length = train.getLength();
+
         auto start = std::chrono::high_resolution_clock::now();
-        train.getLength();
-        auto end   = std::chrono::high_resolution_clock::now();
+        for (int i = 0; i < 100; ++i)
+            train.getLength();
+        auto end = std::chrono::high_resolution_clock::now();
 
-        totalSteps += train.getOpCount();
-        totalTime += std::chrono::duration_cast<
-                          std::chrono::microseconds>(end - start)
-                          .count();
-      }
+        ExperimentResult res;
+        res.n          = n;
+        res.time_us    = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+        res.operations = train.getOpCount();
+        results.push_back(res);
 
-      double avgSteps = static_cast<double>(totalSteps) / runs;
-      double avgTime  = static_cast<double>(totalTime) / runs;
-
-      std::cout << scenarioName << "," << n << ","
-                << avgSteps << "," << avgTime << "\n";
+        std::cout << "n=" << n
+                  << ", length=" << length
+                  << ", time=" << res.time_us << " mcs"
+                  << ", ops=" << res.operations
+                  << std::endl;
     }
-  }
 
-  return 0;
+    return results;
+}
+
+int main()
+{
+    std::ofstream csv_file("results.csv");
+    csv_file << "n,condition,time_us,operations\n";
+
+    auto results_off = run_experiment(0);
+    for (const auto &res : results_off)
+        csv_file << res.n << ",0," << res.time_us << "," << res.operations << "\n";
+
+    auto results_on = run_experiment(1);
+    for (const auto &res : results_on)
+        csv_file << res.n << ",1," << res.time_us << "," << res.operations << "\n";
+
+    auto results_rand = run_experiment(2);
+    for (const auto &res : results_rand)
+        csv_file << res.n << ",2," << res.time_us << "," << res.operations << "\n";
+
+    csv_file.close();
+    return 0;
 }
