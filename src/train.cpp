@@ -1,115 +1,81 @@
 // Copyright 2021 NNTU-CS
+#include <iostream>
 #include "train.h"
 
-Train::Train() {
-  first = nullptr;
-  countOp = 0;
+Train::Train() : countOp(0), first(nullptr) {}
+
+Train::~Train() {
+    if (first) {
+        Car* current = first->next;
+        first->prev->next = nullptr;
+        while (current) {
+            Car* next = current->next;
+            delete current;
+            current = next;
+        }
+    }
 }
 
 void Train::addCar(bool light) {
-  Car* car = new Car{light, nullptr, nullptr};
-  if (!first) {
-    car->next = car;
-    car->prev = car;
-    first = car;
-  } else {
-    Car* last = first->prev;
-    car->next = first;
-    car->prev = last;
-    last->next = car;
-    first->prev = car;
-  }
-}
-
-int Train::countAllOff() {
-  if (!first) return 0;
-  const Car* start = first;
-  const Car* walker = first->next;
-  int ops = 1;
-  while (walker != start) {
-    walker = walker->next;
-    ops++;
-  }
-  return ops;
-}
-
-int Train::countAllOn() {
-  if (!first) return 0;
-  Car* curr = first;
-  int ops = 0;
-  do {
-    curr = curr->next;
-    ops++;
-    curr->light = false;
-  } while (curr != first);
-
-  first->light = true;
-
-  Car* walker = first->next;
-  ops++;
-  while (!walker->light) {
-    walker = walker->next;
-    ops++;
-  }
-  walker->light = false;
-
-  int len = 1;
-  Car* temp = walker->next;
-  ops++;
-  while (temp != walker) {
-    len++;
-    temp = temp->next;
-    ops++;
-  }
-
-  return ops;
-}
-
-int Train::countRandom() {
-  if (!first) return 0;
-  Car* curr = first;
-  int ops = 0;
-  do {
-    curr = curr->next;
-    ops++;
-    curr->light = false;
-  } while (curr != first);
-
-  first->light = true;
-  Car* walker = first->next;
-  ops++;
-  int len = 1;
-  while (walker != first) {
-    len++;
-    walker = walker->next;
-    ops++;
-  }
-  return ops;
+    Car* newCar = new Car();
+    newCar->light = light;
+    
+    if (!first) {
+        newCar->next = newCar;
+        newCar->prev = newCar;
+        first = newCar;
+    } else {
+        newCar->prev = first->prev;
+        newCar->next = first;
+        first->prev->next = newCar;
+        first->prev = newCar;
+    }
+    
+    countOp = 0;
 }
 
 int Train::getLength() {
-  if (!first) return 0;
-
-  bool anyOn = false, allOn = true;
-  Car* cursor = first;
-  do {
-    if (cursor->light) anyOn = true;
-    else allOn = false;
-    cursor = cursor->next;
-  } while (cursor != first && !(anyOn && !allOn));
-
-  if (!anyOn) {
-    countOp = countAllOff();
-    return 1 + countOp;
-  }
-  if (allOn) {
-    countOp = countAllOn();
-    return countOp / 3 + 1;
-  }
-  countOp = countRandom();
-  return countOp / 2 + 1;
+    if (!first) return 0;
+    countOp = 0;
+    
+    Car* current = first;
+    bool originalState = current->light;
+    bool needRestore = false;
+    
+    if (!originalState) {
+        current->light = true;
+        needRestore = true;
+        countOp++;
+    }
+    
+    current = current->next;
+    while (current != first) {
+        if (current->light) {
+            current->light = false;
+            countOp++;
+        }
+        current = current->next;
+        countOp++;
+    }
+    
+    int steps = 1;
+    current = first->next;
+    countOp++;
+    
+    while (current->light != true) {
+        steps++;
+        current = current->next;
+        countOp++;
+    }
+    
+    if (needRestore) {
+        first->light = originalState;
+        countOp++;
+    }
+    
+    return steps;
 }
 
 int Train::getOpCount() {
-  return countOp;
+    return countOp;
 }
