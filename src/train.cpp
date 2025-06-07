@@ -1,74 +1,66 @@
 // Copyright 2021 NNTU-CS
-#include <iostream>
 #include "train.h"
 
 Train::Train() : countOp(0), first(nullptr) {}
 
 Train::~Train() {
-    if (first) {
-        Car* current = first->next;
-        first->prev->next = nullptr;
-        while (current) {
-            Car* next = current->next;
-            delete current;
-            current = next;
-        }
-        delete first;
+    if (!first) return;
+    Car *current = first->next;
+    while (current != first) {
+        Car *next = current->next;
+        delete current;
+        current = next;
     }
+    delete first;
+    first = nullptr;
 }
 
 void Train::addCar(bool light) {
-    Car* newCar = new Car();
-    newCar->light = light;
-
-    if (!first) {
-        newCar->next = newCar;
-        newCar->prev = newCar;
-        first = newCar;
-    } else {
-        newCar->prev = first->prev;
-        newCar->next = first;
-        first->prev->next = newCar;
-        first->prev = newCar;
+    if (first == nullptr) {
+        first = new Car{light, nullptr, nullptr};
+        first->next = first;
+        first->prev = first;
+        return;
     }
-
-    countOp = 0;
-}
-
-int Train::getLength() {
-    if (!first) {
-        countOp = 0;
-        return 0;
-    }
-
-    int n = 1;
-    Car* cur = first->next;
-    while (cur != first) {
-        n++;
-        cur = cur->next;
-    }
-
-    bool allOff = true, allOn = true;
-    cur = first;
-    do {
-        if (cur->light)    allOff = false;
-        else               allOn  = false;
-        cur = cur->next;
-    } while (cur != first);
-
-    if (allOff) {
-        countOp = 2 * n;
-    }
-    else if (allOn) {
-        countOp = n * (n + 1) / 2;
-    }
-    else {
-        countOp = 0;
-    }
-
-    return n;
+    Car *last = first->prev;
+    Car *newCar = new Car{light, first, last};
+    last->next = newCar;
+    first->prev = newCar;
 }
 
 int Train::getOpCount() {
     return countOp;
+}
+
+int Train::getLength() {
+    countOp = 0;
+    if (!first) return 0;
+
+    if (!first->light) {
+        first->light = true;
+    }
+
+    Car* current = first;
+    while (true) {
+        Car* p = current->next;
+        int steps = 1;
+        countOp++;
+
+        while (p != current && !p->light) {
+            p = p->next;
+            steps++;
+            countOp++;
+        }
+
+        if (p == current) {
+            return steps;
+        }
+
+        p->light = false;
+        for (int i = 0; i < steps; i++) {
+            p = p->prev;
+            countOp++;
+        }
+        current = p;
+    }
 }
