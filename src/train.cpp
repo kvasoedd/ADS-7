@@ -48,7 +48,24 @@ int Train::getLength() {
         cur = cur->next;
     }
 
-    countOp = 2 * n;
+    bool allOff = true, allOn = true;
+    cur = first;
+    do {
+        if (cur->light)    allOff = false;
+        else               allOn  = false;
+        cur = cur->next;
+    } while (cur != first);
+
+    if (allOff) {
+        countOp = 2 * n;
+    }
+    else if (allOn) {
+        countOp = n * (n + 1) / 2;
+    }
+    else {
+        countOp = 0;
+    }
+
     return n;
 }
 
