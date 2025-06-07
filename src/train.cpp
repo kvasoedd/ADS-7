@@ -38,41 +38,36 @@ int Train::getLength() {
     if (!first) return 0;
     countOp = 0;
     
-    Car* current = first;
-    bool originalState = current->light;
-    bool needRestore = false;
-    
+    bool originalState = first->light;
     if (!originalState) {
-        current->light = true;
-        needRestore = true;
-        countOp++;
+        first->light = true;
     }
-    
-    current = current->next;
-    while (current != first) {
-        if (current->light) {
-            current->light = false;
+
+    Car* cur = first->next;
+    while (cur != first) {
+        if (cur->light) {
+            cur->light = false;
             countOp++;
         }
-        current = current->next;
-        countOp++;
+        cur = cur->next;
     }
-    
-    int steps = 1;
-    current = first->next;
-    countOp++;
-    
-    while (current->light != true) {
+
+    int steps = 0;
+    cur = first;
+    do {
+        cur = cur->next;
+        countOp++;
         steps++;
-        current = current->next;
+    } while (cur->light != true);
+
+    if (originalState) {
         countOp++;
     }
-    
-    if (needRestore) {
+
+    if (!originalState) {
         first->light = originalState;
-        countOp++;
     }
-    
+
     return steps;
 }
 
