@@ -13,13 +13,14 @@ Train::~Train() {
             delete current;
             current = next;
         }
+        delete first;
     }
 }
 
 void Train::addCar(bool light) {
     Car* newCar = new Car();
     newCar->light = light;
-    
+
     if (!first) {
         newCar->next = newCar;
         newCar->prev = newCar;
@@ -30,17 +31,20 @@ void Train::addCar(bool light) {
         first->prev->next = newCar;
         first->prev = newCar;
     }
-    
+
     countOp = 0;
 }
 
 int Train::getLength() {
     if (!first) return 0;
     countOp = 0;
-    
+
     bool originalState = first->light;
+    bool needRestore = false;
+
     if (!originalState) {
         first->light = true;
+        needRestore = true;
     }
 
     Car* cur = first->next;
@@ -60,14 +64,11 @@ int Train::getLength() {
         steps++;
     } while (cur->light != true);
 
-    if (originalState) {
-        countOp++;
-    }
-
-    if (!originalState) {
+    if (needRestore) {
         first->light = originalState;
     }
 
+    countOp = 2 * steps;
     return steps;
 }
 
