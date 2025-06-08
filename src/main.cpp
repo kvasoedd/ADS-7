@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
+#include <string>
 #include "train.h"
 
 int main() {
@@ -32,10 +33,13 @@ int main() {
       auto start = std::chrono::high_resolution_clock::now();
       train.getLength();
       auto stop = std::chrono::high_resolution_clock::now();
-      auto ms = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() / 1000.0;
+      auto ms = std::chrono::duration_cast<
+          std::chrono::microseconds>(stop - start).count() / 1000.0;
 
-      std::string scenario = (mode == 0 ? "off" : (mode == 1 ? "on" : "random"));
-      fout << n << "," << scenario << "," << train.getOpCount() << "," << ms << "\n";
+      std::string scenario = (mode == 0 ? "off" :
+                             (mode == 1 ? "on" : "random"));
+      fout << n << "," << scenario << "," << train.getOpCount()
+           << "," << ms << "\n";
     }
   }
 
