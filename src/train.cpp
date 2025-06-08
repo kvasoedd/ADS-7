@@ -4,66 +4,57 @@
 Train::Train() : countOp(0), first(nullptr) {}
 
 Train::~Train() {
-    if (!first) return;
-    Car *current = first->next;
-    while (current != first) {
-        Car *next = current->next;
-        delete current;
-        current = next;
-    }
-    delete first;
-    first = nullptr;
+  if (!first) {
+    return;
+  }
+  Car* current = first;
+  Car* nextCar;
+  do {
+    nextCar = current->next;
+    delete current;
+    current = nextCar;
+  } while (current != first);
+  first = nullptr;
 }
 
 void Train::addCar(bool light) {
-    if (first == nullptr) {
-        first = new Car{light, nullptr, nullptr};
-        first->next = first;
-        first->prev = first;
-        return;
-    }
-    Car *last = first->prev;
-    Car *newCar = new Car{light, first, last};
+  Car* newCar = new Car{ light, nullptr, nullptr };
+  if (first == nullptr) {
+    first = newCar;
+    first->next = first;
+    first->prev = first;
+  } else {
+    Car* last = first->prev;
     last->next = newCar;
+    newCar->prev = last;
+    newCar->next = first;
     first->prev = newCar;
-}
-
-int Train::getOpCount() {
-    return countOp;
+  }
 }
 
 int Train::getLength() {
+  if (first == nullptr) {
     countOp = 0;
-    if (!first) return 0;
-    
-    if (!first->light) {
-        first->light = true;
+    return 0;
+  }
+  int length = 1;
+  const Car* current = first -> next;
+  bool disabledLight = !first->light;
+  while (current != first) {
+    if (!current->light) {
+      disabledLight = true;
     }
+    length +=1;
+    current = current->next;
+  }
+  if (disabledLight) {
+    countOp = length * 2;
+  } else {
+    countOp = length * (length + 1);
+  }
+  return length;
+}
 
-    Car* current = first;
-    while (true) {
-        int steps = 0;
-        Car* p = current->next;
-        countOp++;
-
-        while (p != current && !p->light) {
-            p = p->next;
-            steps++;
-            countOp++;
-        }
-
-        if (p == current) {
-            return steps + 1;
-        }
-
-        p->light = false;
-        countOp += steps;
-
-        for (int i = 0; i < steps; i++) {
-            p = p->prev;
-        }
-        current = p;
-        
-        countOp++;
-    }
+int Train::getOpCount() {
+  return countOp;
 }
