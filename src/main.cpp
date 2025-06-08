@@ -1,69 +1,44 @@
 // Copyright 2022 NNTU-CS
 #include <iostream>
 #include <fstream>
-#include <random>
+#include <vector>
 #include <chrono>
+#include <cstdlib>
+#include <ctime>
 #include "train.h"
 
 int main() {
-    const int minN = 2;
-    const int maxN = 100;
-    const int numRepetitions = 10;
+  std::ofstream fout("results.csv");
+  fout << "n,Scenario,Steps,Time\n";
 
-    std::ofstream outOps("ops.txt");
-    std::ofstream outTime("time.txt");
+  std::srand(static_cast<unsigned>(std::time(nullptr)));
 
-    outOps << "n,all_off,all_on,avg_rand\n";
-    outTime << "n,all_off,all_on,avg_rand\n";
+  for (int n = 10; n <= 200; n += 10) {
+    for (int mode = 0; mode < 3; ++mode) {
+      std::vector<bool> lights(n);
+      if (mode == 0) {
+        std::fill(lights.begin(), lights.end(), false);
+      } else if (mode == 1) {
+        std::fill(lights.begin(), lights.end(), true);
+      } else {
+        for (int i = 0; i < n; ++i)
+          lights[i] = std::rand() % 2;
+      }
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(0, 1);
+      Train train;
+      for (bool l : lights)
+        train.addCar(l);
 
-    for (int n = minN; n <= maxN; ++n) {
-        Train trainOff;
-        for (int i = 0; i < n; ++i) {
-            trainOff.addCar(false);
-        }
-        auto startOff = std::chrono::high_resolution_clock::now();
-        trainOff.getLength();
-        auto endOff = std::chrono::high_resolution_clock::now();
-        int opsOff = trainOff.getOpCount();
-        auto durationOff = std::chrono::duration_cast<std::chrono::microseconds>(endOff - startOff).count();
+      auto start = std::chrono::high_resolution_clock::now();
+      int len = train.getLength();
+      auto stop = std::chrono::high_resolution_clock::now();
+      auto ms = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() / 1000.0;
 
-        Train trainOn;
-        for (int i = 0; i < n; ++i) {
-            trainOn.addCar(true);
-        }
-        auto startOn = std::chrono::high_resolution_clock::now();
-        trainOn.getLength();
-        auto endOn = std::chrono::high_resolution_clock::now();
-        int opsOn = trainOn.getOpCount();
-        auto durationOn = std::chrono::duration_cast<std::chrono::microseconds>(endOn - startOn).count();
-
-        double avgOpsRand = 0.0;
-        double avgTimeRand = 0.0;
-        for (int rep = 0; rep < numRepetitions; ++rep) {
-            Train trainRand;
-            for (int i = 0; i < n; ++i) {
-                trainRand.addCar(distrib(gen) == 1);
-            }
-            auto startRand = std::chrono::high_resolution_clock::now();
-            trainRand.getLength();
-            auto endRand = std::chrono::high_resolution_clock::now();
-            avgOpsRand += trainRand.getOpCount();
-            avgTimeRand += std::chrono::duration_cast<std::chrono::microseconds>(endRand - startRand).count();
-        }
-        avgOpsRand /= numRepetitions;
-        avgTimeRand /= numRepetitions;
-
-        outOps << n << "," << opsOff << "," << opsOn << "," << avgOpsRand << "\n";
-        outTime << n << "," << durationOff << "," << durationOn << "," << avgTimeRand << "\n";
-        
-        std::cout << "Completed n = " << n << std::endl;
+      std::string scenario = (mode == 0 ? "off" : (mode == 1 ? "on" : "random"));
+      fout << n << "," << scenario << "," << train.getOpCount() << "," << ms << "\n";
     }
+  }
 
-    outOps.close();
-    outTime.close();
-    return 0;
+  fout.close();
+  return 0;
 }
