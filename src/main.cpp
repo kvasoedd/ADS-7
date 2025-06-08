@@ -30,7 +30,7 @@ int main() {
         train.addCar(l);
 
       auto start = std::chrono::high_resolution_clock::now();
-      int len = train.getLength();
+      train.getLength();
       auto stop = std::chrono::high_resolution_clock::now();
       auto ms = std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count() / 1000.0;
 
